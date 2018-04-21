@@ -1,0 +1,12 @@
+﻿1.0
+account(id, username, password)
+post(id, title, beschreibung, pfad, accountId)
+vote(accountId, postId, value)
+comment(accountId, postId, beschreibung)
+
+1.1
+user(userId, username, password)
+post(postId, title, beschreibung, pfad, userId)
+vote_post(postId, userId, value)
+comment(commentId, userId, postSuperId, commentSuperId, text)
+vote_comment(commentId, userId, value)
