@@ -28,8 +28,6 @@ namespace RedditApi
 
         protected override string HandleRequest(Request request)
         {
-            string answer = null;
-
             #region routes
             try
             {
@@ -42,13 +40,13 @@ namespace RedditApi
                 if (request.Data.ContainsKey("sessionkey") &&
                     !this.sessions.ContainsKey(request.Data["sessionkey"]))
                 {
-                    answer = new NormalAnswer(false, "unauthorized", 401).ToJSON();
+                    return new NormalAnswer(false, "unauthorized", 401).ToJSON();
                 }
 
                 #region Test
                 if (route.Equals("/test") && request.Type == RequestType.GET)
                 {
-                    answer = new NormalAnswer(true, "Test successful", 200).ToJSON();
+                    return new NormalAnswer(true, "Test successful", 200).ToJSON();
                 }
                 #endregion
                 #region Session
@@ -80,29 +78,29 @@ namespace RedditApi
                         }
                         this.sessions.Add(key, new Session(loginData.userId, DateTime.Now.Ticks));
                         loginData.sessionkey = key;
-                        answer = loginAnswer.ToJSON();
+                        return loginAnswer.ToJSON();
                     }
                     else
                     {
-                        answer = returner.ToJSON();
+                        return returner.ToJSON();
                     }
                 }
                 else if (route.Equals("/logout") && request.Type == RequestType.GET)
                 {
                     this.sessions.Remove(request.Data["sessionkey"]);
-                    answer = new NormalAnswer(true, "logout successful", 200).ToJSON();
+                    return new NormalAnswer(true, "logout successful", 200).ToJSON();
                 }
                 else if (route.Equals("/register") && request.Type == RequestType.GET)
                 {
-                    answer = db.Registrieren(new BodiesIn.Registration(request.Data["username"], request.Data["password"])).ToJSON();
+                    return db.Registrieren(new BodiesIn.Registration(request.Data["username"], request.Data["password"])).ToJSON();
                 }
                 else if (route.Equals("/validate") && request.Type == RequestType.GET)
                 {
-                    answer = new NormalAnswer(true, "true", 200).ToJSON();
+                    return new NormalAnswer(true, "true", 200).ToJSON();
                 }
                 else if (route.Equals("/user") && request.Type == RequestType.GET)
                 {
-                    answer = db.GetUser(Convert.ToInt16(request.Data["userId"])).ToJSON();
+                    return db.GetUser(Convert.ToInt16(request.Data["userId"])).ToJSON();
                 }
                 #endregion
                 #region Posts
@@ -112,11 +110,11 @@ namespace RedditApi
                     if (request.Data.ContainsKey("sessionkey"))
                     {
                         var userId = sessions[request.Data["sessionkey"]].userid;
-                        answer = db.GetSinglePost(postId, userId).ToJSON();
+                        return db.GetSinglePost(postId, userId).ToJSON();
                     }
                     else
                     {
-                        answer = db.GetSinglePost(postId).ToJSON();
+                        return db.GetSinglePost(postId).ToJSON();
                     }
                 }
                 else if (route.Equals("/post") && request.Type == RequestType.POST)
@@ -127,7 +125,7 @@ namespace RedditApi
                                                 request.Data["path"]
                                             );
                     int userId = sessions[request.Data["sessionkey"]].userid;
-                    answer = db.CreatePost(input, userId).ToJSON();
+                    return db.CreatePost(input, userId).ToJSON();
                 }
                 else if (route.Equals("/post/upload") && request.Type == RequestType.PUT)
                 {
@@ -135,11 +133,11 @@ namespace RedditApi
                     {
 
                         File.WriteAllText(IMAGE_PATH + SUB_PATH + request.FileName, request.File, Encoding.Default);
-                        answer = new ComplexAnswer(true, "file received", 200, new Upload(SUB_PATH.Replace('\\', '/') + request.FileName)).ToJSON();
+                        return new ComplexAnswer(true, "file received", 200, new Upload(SUB_PATH.Replace('\\', '/') + request.FileName)).ToJSON();
                     }
                     else
                     {
-                        answer = new NormalAnswer(true, "invite recieved", 200).ToJSON();
+                        return new NormalAnswer(true, "invite recieved", 200).ToJSON();
                     }
                 }
                 else if (route.Equals("/post/new") && request.Type == RequestType.GET)
@@ -147,11 +145,11 @@ namespace RedditApi
                     if (request.Data.ContainsKey("sessionkey"))
                     {
                         var userId = sessions[request.Data["sessionkey"]].userid;
-                        answer = db.GetPostAndVote(false, userId).ToJSON();
+                        return db.GetPostAndVote(false, userId).ToJSON();
                     }
                     else
                     {
-                        answer = db.GetPost(false).ToJSON();
+                        return db.GetPost(false).ToJSON();
                     }
                 }
                 else if (route.Equals("/post/hot") && request.Type == RequestType.GET)
@@ -159,11 +157,11 @@ namespace RedditApi
                     if (request.Data.ContainsKey("sessionkey"))
                     {
                         var userId = sessions[request.Data["sessionkey"]].userid;
-                        answer = db.GetPostAndVote(true, userId).ToJSON();
+                        return db.GetPostAndVote(true, userId).ToJSON();
                     }
                     else
                     {
-                        answer = db.GetPost(true).ToJSON();
+                        return db.GetPost(true).ToJSON();
                     }
                 }
                 else if (route.Equals("/post/vote") && request.Type == RequestType.PUT)
@@ -171,7 +169,7 @@ namespace RedditApi
                     var userId = sessions[request.Data["sessionkey"]].userid;
                     var value = Convert.ToInt32(request.Data["value"]);
                     var postId = Convert.ToInt32(request.Data["postId"]);
-                    answer = db.VotePost(new Vote(postId, value, userId)).ToJSON();
+                    return db.VotePost(new Vote(postId, value, userId)).ToJSON();
                 }
                 #endregion
                 #region Comment
@@ -181,31 +179,30 @@ namespace RedditApi
                     var text = request.Data["text"];
                     var postId = Convert.ToInt32(request.Data["postId"]);
                     var commentId = Convert.ToInt32(request.Data["commentId"]);
-                    answer = db.CreateComment(new BodiesIn.Comment(text, postId, commentId), userId).ToJSON();
+                    return db.CreateComment(new BodiesIn.Comment(text, postId, commentId), userId).ToJSON();
                 }
                 else if (route.Equals("/comment/vote") && request.Type == RequestType.PUT)
                 {
                     var userId = sessions[request.Data["sessionkey"]].userid;
                     var value = Convert.ToInt32(request.Data["value"]);
                     var commentId = Convert.ToInt32(request.Data["commentId"]);
-                    answer = db.VoteComment(new Vote(commentId, value, userId)).ToJSON();
+                    return db.VoteComment(new Vote(commentId, value, userId)).ToJSON();
                 }
                 #endregion
                 else
                 {
-                    answer = new NormalAnswer(false, "internal server error [Unknown Path]", 500).ToJSON();
+                    return new NormalAnswer(false, "internal server error [Unknown Path]", 500).ToJSON();
                 }
             }
             catch (KeyNotFoundException)
             {
-                answer = new NormalAnswer(false, $"internal server error [missing data]", 500).ToJSON();
+                return new NormalAnswer(false, $"internal server error [missing data]", 500).ToJSON();
             }
             catch (Exception e)
             {
-                answer = new NormalAnswer(false, $"internal server error [{e.Message}]", 500).ToJSON();
+                return new NormalAnswer(false, $"internal server error [{e.Message}]", 500).ToJSON();
             }
-            #endregion
-            return answer;
+            #endregion            
         }
 
         private string CreateSessionKey()

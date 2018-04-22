@@ -75,6 +75,35 @@ namespace RedditApiTest
             PutTest("/post/vote", voteDictionary, null);
         }
 
+        public void TestComment()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Comment Tests:");
+
+            var login = GetTest("/login?username=jonas&password=jonas", null);
+            var sessionkey = login.Root.Element("data").Element("sessionkey").Value;
+            var userId = login.Root.Element("data").Element("userId").Value;
+
+            var sessionkeyDictionary = new Dictionary<string, string>() { { "sessionkey", sessionkey } };
+
+            PostTest("/comment", sessionkeyDictionary, new RedditApi.BodiesIn.Comment("Testcomment", 1, -1));
+            PostTest("/comment", sessionkeyDictionary, new RedditApi.BodiesIn.Comment("Testsubcomment", -1, 1));
+
+            var voteComment1Dictionary = new Dictionary<string, string>() {
+                { "sessionkey", sessionkey },
+                { "commentId", "1" },
+                { "value", "1" }
+            };
+            PutTest("/post/vote", voteComment1Dictionary, null);
+
+            var voteComment2Dictionary = new Dictionary<string, string>() {
+                { "sessionkey", sessionkey },
+                { "commentId", "2" },
+                { "value", "1" }
+            };
+            PutTest("/post/vote", voteComment2Dictionary, null);
+        }
+
         private XDocument GetTest(string path, Dictionary<string, string> parameters)
         {
             return RestTest(RequestType.GET, path, parameters, null);
