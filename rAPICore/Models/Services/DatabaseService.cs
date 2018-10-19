@@ -291,7 +291,7 @@ namespace rAPI.Services
             SQLiteDataReader reader = command.ExecuteReader();
             reader.Read();
 
-            return (int)reader["count"] == 1;
+            return (long)reader["count"] == 1;
         }
         #endregion
 

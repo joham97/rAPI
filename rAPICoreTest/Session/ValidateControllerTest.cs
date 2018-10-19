@@ -10,24 +10,15 @@ namespace rAPICoreTest
     public class ValidateControllerTest
     {
         [Fact]
-        public void Logout()
+        public void Validate()
         {
             // Arrange
-            DatabaseService.Instance.ClearDatabase();
-
-            RegisterController registerController = new RegisterController();
-            Registration registation = new Registration("testusername", "testpassword");
-            registerController.Post(registation);
-
-            LoginController loginController = new LoginController();
-            Login login = new Login("testusername", "testpassword");
-            var loginResult = loginController.Post(login).Result;
-            string sessionkey = (((loginResult as OkObjectResult).Value as ComplexAnswer).data as LoginData).sessionkey;
+            LoginData loginData = TestSetup.TestLogin();
 
             ValidateController validateController = new ValidateController();
 
             // Act
-            var actionResult = validateController.Get(sessionkey).Result;
+            var actionResult = validateController.Get(loginData.sessionkey).Result;
 
             // Assert            
             Assert.IsType<OkObjectResult>(actionResult);

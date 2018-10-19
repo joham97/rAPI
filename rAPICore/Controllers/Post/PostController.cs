@@ -11,10 +11,8 @@ namespace rAPI.Controllers
     public class PostController : Controller
     {
         [HttpGet]
-        public ActionResult Get([FromQuery] string postId, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Get([FromQuery] int postId, [FromQuery] string sessionkey)
         {
-            var intPostId = Convert.ToInt32(postId);
-
             NormalAnswer result;
             if (sessionkey != null)
             {
@@ -22,11 +20,11 @@ namespace rAPI.Controllers
                     return Unauthorized();
 
                 var userId = SessionService.Instance[sessionkey].userid;
-                result = DatabaseService.Instance.GetSinglePost(intPostId, userId);
+                result = DatabaseService.Instance.GetSinglePost(postId, userId);
             }
             else
             {
-                result = DatabaseService.Instance.GetSinglePost(intPostId);
+                result = DatabaseService.Instance.GetSinglePost(postId);
             }
 
 
@@ -37,7 +35,7 @@ namespace rAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromQuery] string sessionkey, [FromBody] CreatePost createPost)
+        public ActionResult<NormalAnswer> Post([FromQuery] string sessionkey, [FromBody] CreatePost createPost)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();
@@ -58,7 +56,7 @@ namespace rAPI.Controllers
         }
 
         [HttpDelete]
-        public ActionResult Delete([FromQuery] int postId, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Delete([FromQuery] int postId, [FromQuery] string sessionkey)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();

@@ -10,7 +10,7 @@ namespace rAPI.Controllers
     {
 
         [HttpGet]
-        public ActionResult Get([FromQuery] string type, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Get([FromQuery] string type, [FromQuery] string sessionkey)
         {
 
             if (!type.Equals("hot") && !type.Equals("new"))
