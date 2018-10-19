@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using rAPI.Answers;
 using rAPI.DTO;
 using rAPI.Services;
 
@@ -14,14 +15,14 @@ namespace rAPI.Controllers
         }
         
         [HttpPost]
-		public ActionResult Post([FromBody] Registration registration)
+		public ActionResult<NormalAnswer> Post([FromBody] Registration registration)
         {
             var result = DatabaseService.Instance.Registrieren(registration);
 
             if (result.success)
                 return Ok(result);
             else
-                return NotFound(result);
+                return Conflict(result);
         }
         
         [HttpPut]

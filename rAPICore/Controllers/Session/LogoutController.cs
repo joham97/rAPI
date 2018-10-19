@@ -8,7 +8,7 @@ namespace rAPI.Controllers
     public class LogoutController : Controller
     {
         [HttpGet]
-		public ActionResult Get([FromQuery] string sessionkey)
+		public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey)
         {
             SessionService.Instance.Remove(sessionkey);
             return Ok(new NormalAnswer(true, "successful", 200));

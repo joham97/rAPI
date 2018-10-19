@@ -9,7 +9,8 @@ namespace rAPI.Services
     public class DatabaseService
     {
         // Singleton
-        public static readonly DatabaseService Instance = new DatabaseService(@"C:\Users\Administrator\Desktop\API\reddit.db");
+        public static readonly DatabaseService Instance = new DatabaseService(@"reddit.db");
+        //public static readonly DatabaseService Instance = new DatabaseService(@"C:\Users\Administrator\Desktop\API\reddit.db");
 
         private SQLiteConnection connection;
 
@@ -576,5 +577,18 @@ namespace rAPI.Services
             command.ExecuteNonQuery();
         }
 
+        public void ClearDatabase()
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = @"
+                DELETE FROM vote_comment;
+                DELETE FROM vote_post;
+                DELETE FROM comment;
+                DELETE FROM post;
+                DELETE FROM user;
+                DELETE FROM sqlite_sequence;
+            ";
+            command.ExecuteNonQuery();
+        }
     }
 }
