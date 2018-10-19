@@ -245,6 +245,29 @@ namespace rAPI.Services
             return new NormalAnswer(false, "internal server error [sql]", 500);
         }
 
+        public NormalAnswer DeletePost(int postId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"DELETE FROM post WHERE postId = {postId};";
+            command.ExecuteNonQuery();
+
+            List<int> subComments = new List<int>();
+
+            command.CommandText = $"SELECT commentId FROM comment WHERE superPostId = {postId};";
+            SQLiteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                subComments.Add((int)reader["commentId"]);
+            }
+
+            foreach (int subCommentId in subComments)
+            {
+                this.DeleteComment(subCommentId);
+            }
+
+            return new NormalAnswer(true, "successful", 200);
+        }
+
         public NormalAnswer GetUser(int userId)
         {
             var command = new SQLiteCommand(this.connection);
@@ -256,6 +279,18 @@ namespace rAPI.Services
                 return new ComplexAnswer(true, "successful", 200, new UserData(userId, reader[1].ToString()));
             }
             return new NormalAnswer(false, "not found", 404);
+        }
+
+        public bool IsUserOwnerOfPost(int postId, int userId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"SELECT COUNT(*) as count FROM Post WHERE postId = {postId} AND userId = {userId};";
+            command.ExecuteNonQuery();
+
+            SQLiteDataReader reader = command.ExecuteReader();
+            reader.Read();
+
+            return (int)reader["count"] == 1;
         }
         #endregion
 
@@ -448,7 +483,33 @@ namespace rAPI.Services
             }
             return new NormalAnswer(false, "internal server error [sql]", 500);
         }
+        
+        public NormalAnswer DeleteComment(int commentId)
+        {
+            var command = new SQLiteCommand(this.connection);
+
+            command.CommandText = $"DELETE FROM comment WHERE commentId = {commentId};";
+            command.ExecuteNonQuery();
+
+            List<int> subComments = new List<int>();
+
+            command.CommandText = $"SELECT commentId FROM comment WHERE superCommentId = {commentId};";
+            SQLiteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                subComments.Add((int)reader["commentId"]);
+            }
+
+            foreach (int subCommentId in subComments)
+            {
+                this.DeleteComment(subCommentId);
+            }
+
+            return new NormalAnswer(true, "successful", 200);
+        }
+
         #endregion
+
 
         private void InitDatabase(string filename)
         {

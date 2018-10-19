@@ -6,7 +6,6 @@ using rAPI.Services;
 namespace rAPI.Controllers
 {
     [Route("api/[controller]")]
-    [EnableCors("AllowSpecificOrigin")]
     public class PostsController : Controller
     {
 

@@ -21,7 +21,7 @@ namespace rAPI.Controllers
             if (result.success)
                 return Ok(result);
             else
-                return NotFound();
+                return NotFound(result);
         }
         
         [HttpPut]

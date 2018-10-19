@@ -58,9 +58,21 @@ namespace rAPI.Controllers
         }
 
         [HttpDelete]
-        public ActionResult Delete()
+        public ActionResult Delete([FromQuery] int postId, [FromQuery] string sessionkey)
         {
-            return Forbid("Forbidden Method");
+            if (!SessionService.Instance.ContainsKey(sessionkey))
+                return Unauthorized();
+
+            var userId = SessionService.Instance[sessionkey].userid;
+            if (!DatabaseService.Instance.IsUserOwnerOfPost(postId, userId))
+                return Unauthorized();
+
+            var result = DatabaseService.Instance.DeletePost(postId);
+
+            if (result.success)
+                return Ok(result);
+            else
+                return NotFound();
         }
     }
 }
