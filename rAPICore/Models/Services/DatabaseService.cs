@@ -211,6 +211,9 @@ namespace rAPI.Services
 
         public NormalAnswer VotePost(Vote votePost)
         {
+            if(!HasPost(votePost.postId))
+                return new NormalAnswer(false, "Post not found", 404);
+
             bool update = false;
 
             var command = new SQLiteCommand(this.connection);
@@ -286,6 +289,18 @@ namespace rAPI.Services
         {
             var command = new SQLiteCommand(this.connection);
             command.CommandText = $"SELECT COUNT(*) as count FROM Post WHERE postId = {postId} AND userId = {userId};";
+            command.ExecuteNonQuery();
+
+            SQLiteDataReader reader = command.ExecuteReader();
+            reader.Read();
+
+            return (long)reader["count"] == 1;
+        }
+
+        public bool HasPost(int postId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"SELECT COUNT(*) as count FROM Post WHERE postId = {postId};";
             command.ExecuteNonQuery();
 
             SQLiteDataReader reader = command.ExecuteReader();
@@ -451,6 +466,9 @@ namespace rAPI.Services
 
         public NormalAnswer VoteComment(CommentVote vote, int userId)
         {
+            if(!HasComment(vote.commentId))
+                return new NormalAnswer(false, "Comment not found", 404);
+
             bool update = false;
 
             var command = new SQLiteCommand(this.connection);
@@ -488,6 +506,9 @@ namespace rAPI.Services
 
         public NormalAnswer DeleteComment(int commentId)
         {
+            if (!HasComment(commentId))
+                return new NormalAnswer(false, "Comment not found", 404);
+
             var command = new SQLiteCommand(this.connection);
 
             command.CommandText = $"DELETE FROM comment WHERE commentId = {commentId};";
@@ -509,7 +530,18 @@ namespace rAPI.Services
 
             return new NormalAnswer(true, "successful", 200);
         }
+        
+        public bool HasComment(int commentId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"SELECT COUNT(*) as count FROM comment WHERE commentId = {commentId};";
+            command.ExecuteNonQuery();
 
+            SQLiteDataReader reader = command.ExecuteReader();
+            reader.Read();
+
+            return (long)reader["count"] == 1;
+        }
         #endregion
 
 

@@ -10,11 +10,10 @@ namespace rAPI.Controllers
     {
 
         [HttpGet]
-        public ActionResult<NormalAnswer> Get([FromQuery] string type, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey, [FromQuery] string type)
         {
-
             if (!type.Equals("hot") && !type.Equals("new"))
-                return BadRequest(new NormalAnswer(false, "type should be 'hot' or 'new'", 401));
+                return BadRequest();
             var isHot = type.Equals("hot");
 
             NormalAnswer result;
@@ -34,11 +33,11 @@ namespace rAPI.Controllers
             if (result.success)
                 return Ok(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
 
         [HttpPost]
-        public ActionResult Posts()
+        public ActionResult Post()
         {
             return Forbid("Forbidden Method");
         }

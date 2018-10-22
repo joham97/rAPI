@@ -117,5 +117,23 @@ namespace rAPICoreTest
             Assert.Equal(Mocks.subComment.text, data.text);
         }
 
+        [Fact]
+        public void CreateCommentFailed()
+        {
+            Assert.IsType<UnauthorizedResult>(new CommentController().Post("", Mocks.comment1).Result);
+
+            LoginData loginData = TestSetup.TestLogin();
+            Assert.IsType<NotFoundResult>(new CommentController().Post(loginData.sessionkey, Mocks.comment1).Result);
+        }
+
+        [Fact]
+        public void VoteCommentFailed()
+        {
+            Assert.IsType<UnauthorizedResult>(new VoteCommentController().Post("", Mocks.voteOnCommentPositive).Result);
+
+            LoginData loginData = TestSetup.TestLogin();
+            Assert.IsType<NotFoundResult>(new VoteCommentController().Post(loginData.sessionkey, new CommentVote(123, 1)).Result);
+        }
+
     }
 }

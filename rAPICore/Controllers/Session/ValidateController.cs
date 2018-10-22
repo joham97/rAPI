@@ -17,7 +17,7 @@ namespace rAPI.Controllers
         }
         
         [HttpPost]
-		public ActionResult Post(int id)
+		public ActionResult Post()
         {
             return Forbid("Forbidden Method");
         }

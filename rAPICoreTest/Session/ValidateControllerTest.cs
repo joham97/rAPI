@@ -23,6 +23,11 @@ namespace rAPICoreTest
             // Assert            
             Assert.IsType<OkObjectResult>(actionResult);
         }
+        [Fact]
+        public void ValidateFailed()
+        {
+            Assert.IsType<UnauthorizedResult>(new ValidateController().Get("").Result);
+        }
 
     }
 }

@@ -27,6 +27,10 @@ namespace rAPICoreTest
             Assert.Equal(expected.userId, actual.userId);
             Assert.Equal(expected.username, actual.username);
         }
-
+        [Fact]
+        public void UserDataFailed()
+        {
+            Assert.IsType<NotFoundObjectResult>(new UserController().Get(123).Result);
+        }
     }
 }

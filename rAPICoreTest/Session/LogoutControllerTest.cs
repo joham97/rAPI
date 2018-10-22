@@ -23,6 +23,18 @@ namespace rAPICoreTest
             // Assert            
             Assert.IsType<OkObjectResult>(actionResult);
         }
+        [Fact]
+        public void LogoutUnauthorized()
+        {
+            // Arrange
+            LogoutController logoutController = new LogoutController();
+
+            // Act
+            var actionResult = logoutController.Get("").Result;
+
+            // Assert            
+            Assert.IsType<OkObjectResult>(actionResult);
+        }
 
     }
 }

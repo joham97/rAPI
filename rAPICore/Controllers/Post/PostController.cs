@@ -30,8 +30,10 @@ namespace rAPI.Controllers
 
             if (result.success)
                 return Ok(result);
-            else
-                return NotFound();
+            else if (result.code == 404)
+                return NotFound(result);
+            else 
+                return Conflict(result);
         }
 
         [HttpPost]
@@ -46,7 +48,7 @@ namespace rAPI.Controllers
             if (result.success)
                 return Ok(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
 
         [HttpPut]
@@ -70,7 +72,7 @@ namespace rAPI.Controllers
             if (result.success)
                 return Ok(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
     }
 }
