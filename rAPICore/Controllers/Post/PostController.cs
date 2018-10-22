@@ -11,7 +11,7 @@ namespace rAPI.Controllers
     public class PostController : Controller
     {
         [HttpGet]
-        public ActionResult<NormalAnswer> Get([FromQuery] int postId, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey, [FromQuery] int postId)
         {
             NormalAnswer result;
             if (sessionkey != null)
@@ -56,7 +56,7 @@ namespace rAPI.Controllers
         }
 
         [HttpDelete]
-        public ActionResult<NormalAnswer> Delete([FromQuery] int postId, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Delete([FromQuery] string sessionkey, [FromQuery] int postId)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();
