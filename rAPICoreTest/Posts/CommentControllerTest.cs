@@ -75,6 +75,29 @@ namespace rAPICoreTest
         }
 
         [Fact]
+        public void UpdateVoteComment()
+        {
+            // Arrange
+            LoginData loginData = CreateComment();
+
+            VoteCommentController voteCommentController = new VoteCommentController();
+
+            voteCommentController.Post(loginData.sessionkey, Mocks.voteOnCommentNegative);
+
+            // Act
+            var actionResult = voteCommentController.Post(loginData.sessionkey, Mocks.voteOnCommentPositive).Result;
+            var actual = ((actionResult as OkObjectResult).Value as ComplexAnswer);
+            var data = actual.data as Comment;
+
+            // Assert            
+            Assert.IsType<OkObjectResult>(actionResult);
+            Assert.Equal(TestSetup.NormalAnswer.code, actual.code);
+            Assert.Equal(TestSetup.NormalAnswer.message, actual.message);
+            Assert.Equal(TestSetup.NormalAnswer.success, actual.success);
+            Assert.Equal(1, data.yourvote);
+        }
+
+        [Fact]
         public void CreateNegativeVoteComment()
         {
             // Arrange

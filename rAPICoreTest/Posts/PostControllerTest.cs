@@ -216,6 +216,32 @@ namespace rAPICoreTest
         }
 
         [Fact]
+        public void UpvoteAndDownvoteSamePost()
+        {
+            // Arrange
+            LoginData loginData = CreatePost();
+
+            PostController postController = new PostController();
+            var getPostResult = postController.Get(loginData.sessionkey, 1).Result;
+            var createdPost = ((getPostResult as OkObjectResult).Value as ComplexAnswer).data as Post;
+
+            VoteController voteController = new VoteController();
+
+            // Act
+            voteController.Post(loginData.sessionkey, Mocks.downvote);
+            voteController.Post(loginData.sessionkey, Mocks.upvote);
+
+            // Assert
+            var actionResult = postController.Get(loginData.sessionkey, 1).Result;
+            var actual = ((actionResult as OkObjectResult).Value as ComplexAnswer).data as Post;
+
+            Assert.Equal(Mocks.createPosts[0].title, actual.title);
+            Assert.Equal(Mocks.createPosts[0].description, actual.description);
+            Assert.Equal(Mocks.createPosts[0].path, actual.path);
+            Assert.Equal(1, actual.upvotes);
+        }
+
+        [Fact]
         public void DownvotePost()
         {
             // Arrange

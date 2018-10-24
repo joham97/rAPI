@@ -23,5 +23,22 @@ namespace rAPICoreTest
             // Assert            
             Assert.IsType<OkObjectResult>(actionResult);
         }
+
+        [Fact]
+        public void RegisterTwice()
+        {
+            // Arrange
+            DatabaseService.Instance.ClearDatabase();
+
+            RegisterController registerController = new RegisterController();
+            Registration registation = new Registration("testusername", "testpassword");
+            registerController.Post(registation);
+
+            // Act
+            var actionResult = registerController.Post(registation).Result;
+
+            // Assert            
+            Assert.IsType<ConflictObjectResult>(actionResult);
+        }
     }
 }

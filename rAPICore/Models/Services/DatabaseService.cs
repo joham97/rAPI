@@ -44,7 +44,7 @@ namespace rAPI.Services
             {
                 if ((string)reader[0] == input.username)
                 {
-                    return new NormalAnswer(false, "username already exists", 400);
+                    return new NormalAnswer(false, "username already exists", 409);
                 }
             }
             reader.Close();
