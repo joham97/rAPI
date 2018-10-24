@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using rAPI.Answers;
 using rAPI.DTO;
 using rAPI.Services;
 
@@ -14,13 +15,14 @@ namespace rAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromQuery] string sessionkey, [FromBody] CommentVote vote)
+        public ActionResult<NormalAnswer> Post([FromQuery] string sessionkey, [FromBody] CommentVote vote)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();
 
-            vote.userId = SessionService.Instance[sessionkey].userid;
-            var result = DatabaseService.Instance.VoteComment(vote);
+            var userId = SessionService.Instance[sessionkey].userid;
+
+            var result = DatabaseService.Instance.VoteComment(vote, userId);
 
             if (result.success)
                 return Ok(result);

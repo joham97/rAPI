@@ -8,7 +8,7 @@ namespace rAPI.Controllers
     public class ValidateController : Controller
     {
         [HttpGet]
-		public ActionResult Get([FromQuery] string sessionkey)
+		public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey)
         {
             if (SessionService.Instance.ContainsKey(sessionkey))
                 return Ok(new NormalAnswer(true, "successful", 200));
@@ -17,7 +17,7 @@ namespace rAPI.Controllers
         }
         
         [HttpPost]
-		public ActionResult Post(int id)
+		public ActionResult Post()
         {
             return Forbid("Forbidden Method");
         }

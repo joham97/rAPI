@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using rAPI.Answers;
 using rAPI.DTO;
 using rAPI.Services;
 
@@ -14,7 +15,7 @@ namespace rAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromQuery] string sessionkey, [FromBody] CreateComment comment)
+        public ActionResult<NormalAnswer> Post([FromQuery] string sessionkey, [FromBody] CreateComment comment)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();

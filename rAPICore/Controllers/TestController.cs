@@ -9,25 +9,25 @@ namespace rAPI.Controllers
     public class TestController : Controller
     {
 		[HttpGet]
-		public ActionResult Get()
+		public ActionResult<NormalAnswer> Get()
         {
             return Ok(new NormalAnswer(true, "successful", 200));
         }
         
         [HttpPost]
-		public ActionResult Post()
+		public ActionResult<NormalAnswer> Post()
         {
             return Ok(new NormalAnswer(true, "successful", 200));
         }
         
         [HttpPut]
-		public ActionResult Put()
+		public ActionResult<NormalAnswer> Put()
         {
             return Ok(new NormalAnswer(true, "successful", 200));
         }
         
         [HttpDelete]
-		public ActionResult Delete()
+		public ActionResult<NormalAnswer> Delete()
         {
             return Ok(new NormalAnswer(true, "successful", 200));
         }

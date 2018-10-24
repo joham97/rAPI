@@ -9,7 +9,8 @@ namespace rAPI.Services
     public class DatabaseService
     {
         // Singleton
-        public static readonly DatabaseService Instance = new DatabaseService(@"C:\Users\Administrator\Desktop\API\reddit.db");
+        public static readonly DatabaseService Instance = new DatabaseService(@"reddit.db");
+        //public static readonly DatabaseService Instance = new DatabaseService(@"C:\Users\Administrator\Desktop\API\reddit.db");
 
         private SQLiteConnection connection;
 
@@ -43,7 +44,7 @@ namespace rAPI.Services
             {
                 if ((string)reader[0] == input.username)
                 {
-                    return new NormalAnswer(false, "username already exists", 400);
+                    return new NormalAnswer(false, "username already exists", 409);
                 }
             }
             reader.Close();
@@ -210,6 +211,9 @@ namespace rAPI.Services
 
         public NormalAnswer VotePost(Vote votePost)
         {
+            if(!HasPost(votePost.postId))
+                return new NormalAnswer(false, "Post not found", 404);
+
             bool update = false;
 
             var command = new SQLiteCommand(this.connection);
@@ -251,13 +255,13 @@ namespace rAPI.Services
             command.CommandText = $"DELETE FROM post WHERE postId = {postId};";
             command.ExecuteNonQuery();
 
-            List<int> subComments = new List<int>();
+            List<long> subComments = new List<long>();
 
             command.CommandText = $"SELECT commentId FROM comment WHERE superPostId = {postId};";
             SQLiteDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                subComments.Add((int)reader["commentId"]);
+                subComments.Add((long)reader["commentId"]);
             }
 
             foreach (int subCommentId in subComments)
@@ -290,14 +294,27 @@ namespace rAPI.Services
             SQLiteDataReader reader = command.ExecuteReader();
             reader.Read();
 
-            return (int)reader["count"] == 1;
+            return (long)reader["count"] == 1;
+        }
+
+        public bool HasPost(int postId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"SELECT COUNT(*) as count FROM Post WHERE postId = {postId};";
+            command.ExecuteNonQuery();
+
+            SQLiteDataReader reader = command.ExecuteReader();
+            reader.Read();
+
+            return (long)reader["count"] == 1;
         }
         #endregion
 
         #region Comment
         public NormalAnswer CreateComment(CreateComment input, int userId)
         {
-            var post = input.postId != -1;
+            if (input.postId >= 0 && !GetSinglePost(input.postId).success)
+                return new NormalAnswer(false, "Post not found", 404);
 
             var command = new SQLiteCommand(this.connection);
 
@@ -447,13 +464,16 @@ namespace rAPI.Services
             return comments;
         }
 
-        public NormalAnswer VoteComment(CommentVote vote)
+        public NormalAnswer VoteComment(CommentVote vote, int userId)
         {
+            if(!HasComment(vote.commentId))
+                return new NormalAnswer(false, "Comment not found", 404);
+
             bool update = false;
 
             var command = new SQLiteCommand(this.connection);
 
-            command.CommandText = $"SELECT v.commentId FROM vote_comment v WHERE v.userId = {vote.userId} " +
+            command.CommandText = $"SELECT v.commentId FROM vote_comment v WHERE v.userId = {userId} " +
                                     $"AND v.commentId = {vote.commentId};";
             SQLiteDataReader reader = command.ExecuteReader();
             while (reader.Read())
@@ -470,34 +490,37 @@ namespace rAPI.Services
             {
                 command.CommandText = $"UPDATE vote_comment SET " +
                     $"value = {vote.value} " +
-                    $"WHERE commentId = {vote.commentId} AND userId = { vote.userId};";
+                    $"WHERE commentId = {vote.commentId} AND userId = {userId};";
             }
             else
             {
                 command.CommandText = $"INSERT INTO vote_comment (commentId, userId, value) VALUES (" +
-                    $"{vote.commentId}, {vote.userId}, {vote.value});";
+                    $"{vote.commentId}, {userId}, {vote.value});";
             }
             if (command.ExecuteNonQuery() > 0)
             {
-                return new ComplexAnswer(true, "successful", 200, GetComment(vote.commentId, vote.userId));
+                return new ComplexAnswer(true, "successful", 200, GetComment(vote.commentId, userId));
             }
             return new NormalAnswer(false, "internal server error [sql]", 500);
         }
-        
+
         public NormalAnswer DeleteComment(int commentId)
         {
+            if (!HasComment(commentId))
+                return new NormalAnswer(false, "Comment not found", 404);
+
             var command = new SQLiteCommand(this.connection);
 
             command.CommandText = $"DELETE FROM comment WHERE commentId = {commentId};";
             command.ExecuteNonQuery();
 
-            List<int> subComments = new List<int>();
+            List<long> subComments = new List<long>();
 
             command.CommandText = $"SELECT commentId FROM comment WHERE superCommentId = {commentId};";
             SQLiteDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                subComments.Add((int)reader["commentId"]);
+                subComments.Add((long)reader["commentId"]);
             }
 
             foreach (int subCommentId in subComments)
@@ -507,7 +530,18 @@ namespace rAPI.Services
 
             return new NormalAnswer(true, "successful", 200);
         }
+        
+        public bool HasComment(int commentId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"SELECT COUNT(*) as count FROM comment WHERE commentId = {commentId};";
+            command.ExecuteNonQuery();
 
+            SQLiteDataReader reader = command.ExecuteReader();
+            reader.Read();
+
+            return (long)reader["count"] == 1;
+        }
         #endregion
 
 
@@ -576,5 +610,18 @@ namespace rAPI.Services
             command.ExecuteNonQuery();
         }
 
+        public void ClearDatabase()
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = @"
+                DELETE FROM vote_comment;
+                DELETE FROM vote_post;
+                DELETE FROM comment;
+                DELETE FROM post;
+                DELETE FROM user;
+                DELETE FROM sqlite_sequence;
+            ";
+            command.ExecuteNonQuery();
+        }
     }
 }

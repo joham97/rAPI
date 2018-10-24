@@ -11,10 +11,8 @@ namespace rAPI.Controllers
     public class PostController : Controller
     {
         [HttpGet]
-        public ActionResult Get([FromQuery] string postId, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey, [FromQuery] int postId)
         {
-            var intPostId = Convert.ToInt32(postId);
-
             NormalAnswer result;
             if (sessionkey != null)
             {
@@ -22,22 +20,24 @@ namespace rAPI.Controllers
                     return Unauthorized();
 
                 var userId = SessionService.Instance[sessionkey].userid;
-                result = DatabaseService.Instance.GetSinglePost(intPostId, userId);
+                result = DatabaseService.Instance.GetSinglePost(postId, userId);
             }
             else
             {
-                result = DatabaseService.Instance.GetSinglePost(intPostId);
+                result = DatabaseService.Instance.GetSinglePost(postId);
             }
 
 
             if (result.success)
                 return Ok(result);
-            else
-                return NotFound();
+            else if (result.code == 404)
+                return NotFound(result);
+            else 
+                return Conflict(result);
         }
 
         [HttpPost]
-        public ActionResult Post([FromQuery] string sessionkey, [FromBody] CreatePost createPost)
+        public ActionResult<NormalAnswer> Post([FromQuery] string sessionkey, [FromBody] CreatePost createPost)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();
@@ -48,7 +48,7 @@ namespace rAPI.Controllers
             if (result.success)
                 return Ok(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
 
         [HttpPut]
@@ -58,7 +58,7 @@ namespace rAPI.Controllers
         }
 
         [HttpDelete]
-        public ActionResult Delete([FromQuery] int postId, [FromQuery] string sessionkey)
+        public ActionResult<NormalAnswer> Delete([FromQuery] string sessionkey, [FromQuery] int postId)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();
@@ -72,7 +72,7 @@ namespace rAPI.Controllers
             if (result.success)
                 return Ok(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
     }
 }

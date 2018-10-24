@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using rAPI.Answers;
 using rAPI.Services;
 using System;
 
@@ -8,18 +9,20 @@ namespace rAPI.Controllers
     public class UserController : Controller
     {
         [HttpGet]
-		public ActionResult Get([FromQuery] string userId)
+		public ActionResult<NormalAnswer> Get([FromQuery] int userId)
         {
-            var result = DatabaseService.Instance.GetUser(Convert.ToInt16(userId));
+            var result = DatabaseService.Instance.GetUser(userId);
 
             if (result.success)
                 return Ok(result);
+            else if (result.code == 404)
+                return NotFound(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
         
         [HttpPost]
-		public ActionResult Post(int id)
+		public ActionResult Post()
         {
             return Forbid("Forbidden Method");
         }

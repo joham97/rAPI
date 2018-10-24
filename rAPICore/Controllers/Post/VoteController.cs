@@ -16,7 +16,7 @@ namespace rAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromQuery] string sessionkey,  [FromBody] Vote vote)
+        public ActionResult<NormalAnswer> Post([FromQuery] string sessionkey,  [FromBody] Vote vote)
         {
             if (!SessionService.Instance.ContainsKey(sessionkey))
                 return Unauthorized();
@@ -26,8 +26,10 @@ namespace rAPI.Controllers
 
             if (result.success)
                 return Ok(result);
+            else if (result.code == 404)
+                return NotFound(result);
             else
-                return NotFound();
+                return Conflict(result);
         }
         
         [HttpPut]

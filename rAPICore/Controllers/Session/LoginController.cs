@@ -17,7 +17,7 @@ namespace rAPI.Controllers
         }
 
         [HttpPost]
-		public ActionResult Post([FromBody] Login login)
+		public ActionResult<NormalAnswer> Post([FromBody] Login login)
         {
             var result = DatabaseService.Instance.Login(login);
             if (result.success)
