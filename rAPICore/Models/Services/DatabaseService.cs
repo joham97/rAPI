@@ -191,10 +191,9 @@ namespace rAPI.Services
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes, " +
                                    $"IFNULL((SELECT v.value FROM vote_post v WHERE v.postId = p.postId AND v.userId = {myUserId}), 0) as yourvote " +
                                     "FROM post p, user u " +
-                                   $"WHERE p.userId = {userId} " +
+                                   $"WHERE p.userId = {userId} AND p.userId = u.userId " +
                                     "ORDER BY p.postId DESC;";
             
-
             List<DataAnswer> output = new List<DataAnswer>();
             SQLiteDataReader reader = command.ExecuteReader();
             while (reader.Read())
