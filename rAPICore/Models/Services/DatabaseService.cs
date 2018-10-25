@@ -118,6 +118,24 @@ namespace rAPI.Services
             }
             return new ComplexListAnswer(true, "successful", 200, output);
         }
+        public NormalAnswer GetPostOfUser(int userId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, u.username, " +
+                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = 1) as upvotes, " +
+                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes " +
+                                    "FROM post p, user u " +
+                                   $"WHERE p.userId = {userId} AND p.userId = u.userId " +
+                                    "ORDER BY p.postId DESC;";
+
+            List<DataAnswer> output = new List<DataAnswer>();
+            SQLiteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                output.Add(ParsePost(reader));
+            }
+            return new ComplexListAnswer(true, "successful", 200, output);
+        }
 
         public Post ParsePostWithVote(SQLiteDataReader reader)
         {
@@ -156,6 +174,26 @@ namespace rAPI.Services
                                     "WHERE p.userId = u.userId " +
                                     "ORDER BY votes DESC;";
             }
+
+            List<DataAnswer> output = new List<DataAnswer>();
+            SQLiteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                output.Add(ParsePostWithVote(reader));
+            }
+            return new ComplexListAnswer(true, "successful", 200, output);
+        }
+        public NormalAnswer GetPostAndVoteOfUser(int userId, int myUserId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, u.username, " +
+                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = 1) as upvotes, " +
+                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes, " +
+                                   $"IFNULL((SELECT v.value FROM vote_post v WHERE v.postId = p.postId AND v.userId = {myUserId}), 0) as yourvote " +
+                                    "FROM post p, user u " +
+                                   $"WHERE p.userId = {userId} " +
+                                    "ORDER BY p.postId DESC;";
+            
 
             List<DataAnswer> output = new List<DataAnswer>();
             SQLiteDataReader reader = command.ExecuteReader();

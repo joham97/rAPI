@@ -87,7 +87,7 @@ namespace rAPICoreTest
 
             // Act
             PostsController postsController = new PostsController();
-            var actionResult = postsController.Get(loginData.sessionkey, "new").Result;
+            var actionResult = postsController.Get(loginData.sessionkey, "new", null).Result;
             var actual = ((actionResult as OkObjectResult).Value as ComplexListAnswer).data as List<DataAnswer>;
 
             // Assert            
@@ -117,7 +117,7 @@ namespace rAPICoreTest
 
             // Act
             PostsController postsController = new PostsController();
-            var actionResult = postsController.Get(null, "new").Result;
+            var actionResult = postsController.Get(null, "new", null).Result;
             var actual = ((actionResult as OkObjectResult).Value as ComplexListAnswer).data as List<DataAnswer>;
 
             // Assert            
@@ -147,7 +147,7 @@ namespace rAPICoreTest
 
             // Act
             PostsController postsController = new PostsController();
-            var actionResult = postsController.Get(loginData.sessionkey, "hot").Result;
+            var actionResult = postsController.Get(loginData.sessionkey, "hot", null).Result;
             var actual = ((actionResult as OkObjectResult).Value as ComplexListAnswer).data as List<DataAnswer>;
 
             // Assert            
@@ -177,7 +177,7 @@ namespace rAPICoreTest
 
             // Act
             PostsController postsController = new PostsController();
-            var actionResult = postsController.Get(null, "hot").Result;
+            var actionResult = postsController.Get(null, "hot", null).Result;
             var actual = ((actionResult as OkObjectResult).Value as ComplexListAnswer).data as List<DataAnswer>;
 
             // Assert            
@@ -191,6 +191,67 @@ namespace rAPICoreTest
                 Assert.Equal(Mocks.createPosts[i].path, singleActual.path);
             }
         }
+
+        [Fact]
+        public void GetUserPosts()
+        {
+            // Arrange
+            LoginData loginData = TestSetup.TestLogin();
+
+            PostController postController = new PostController();
+
+            // Act
+            postController.Post(loginData.sessionkey, Mocks.createPosts[0]);
+            postController.Post(loginData.sessionkey, Mocks.createPosts[1]);
+            postController.Post(loginData.sessionkey, Mocks.createPosts[2]);
+
+            // Act
+            PostsController postsController = new PostsController();
+            var actionResult = postsController.Get(loginData.sessionkey, "user", "1").Result;
+            var actual = ((actionResult as OkObjectResult).Value as ComplexListAnswer).data as List<DataAnswer>;
+
+            // Assert            
+            Assert.IsType<OkObjectResult>(actionResult);
+            Assert.Equal(Mocks.createPosts.Length, actual.Count);
+            for (int i = 0; i < 3; i++)
+            {
+                var singleActual = actual[2 - i] as Post;
+                Assert.Equal(Mocks.createPosts[i].title, singleActual.title);
+                Assert.Equal(Mocks.createPosts[i].description, singleActual.description);
+                Assert.Equal(Mocks.createPosts[i].path, singleActual.path);
+            }
+        }
+        
+        [Fact]
+        public void GetUserPostsWithoutSessionkey()
+        {
+            // Arrange
+            LoginData loginData = TestSetup.TestLogin();
+
+            PostController postController = new PostController();
+
+            // Act
+            postController.Post(loginData.sessionkey, Mocks.createPosts[0]);
+            postController.Post(loginData.sessionkey, Mocks.createPosts[1]);
+            postController.Post(loginData.sessionkey, Mocks.createPosts[2]);
+
+            // Act
+            PostsController postsController = new PostsController();
+            var actionResult = postsController.Get(null, "user", "1").Result;
+            var actual = ((actionResult as OkObjectResult).Value as ComplexListAnswer).data as List<DataAnswer>;
+
+            // Assert            
+            Assert.IsType<OkObjectResult>(actionResult);
+            Assert.Equal(Mocks.createPosts.Length, actual.Count);
+            for (int i = 0; i < 3; i++)
+            {
+                var singleActual = actual[2 - i] as Post;
+                Assert.Equal(Mocks.createPosts[i].title, singleActual.title);
+                Assert.Equal(Mocks.createPosts[i].description, singleActual.description);
+                Assert.Equal(Mocks.createPosts[i].path, singleActual.path);
+            }
+        }
+
 
         [Fact]
         public void UpvotePost()
@@ -433,9 +494,9 @@ namespace rAPICoreTest
         [Fact]
         public void GetPostsUnauthorized()
         {
-            Assert.IsType<UnauthorizedResult>(new PostsController().Get("", "hot").Result);
-            Assert.IsType<UnauthorizedResult>(new PostsController().Get("", "new").Result);
-            Assert.IsType<BadRequestResult>(new PostsController().Get("", "123").Result);
+            Assert.IsType<UnauthorizedResult>(new PostsController().Get("", "hot", null).Result);
+            Assert.IsType<UnauthorizedResult>(new PostsController().Get("", "new", null).Result);
+            Assert.IsType<BadRequestResult>(new PostsController().Get("", "123", null).Result);
         }
         #endregion
 

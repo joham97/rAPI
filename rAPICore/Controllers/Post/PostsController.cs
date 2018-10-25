@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using rAPI.Answers;
 using rAPI.Services;
+using System;
 
 namespace rAPI.Controllers
 {
@@ -10,9 +11,9 @@ namespace rAPI.Controllers
     {
 
         [HttpGet]
-        public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey, [FromQuery] string type)
+        public ActionResult<NormalAnswer> Get([FromQuery] string sessionkey, [FromQuery] string type, [FromQuery] string userId)
         {
-            if (!type.Equals("hot") && !type.Equals("new"))
+            if (!type.Equals("hot") && !type.Equals("new") && (!type.Equals("user") || userId == null || !int.TryParse(userId, out int n)))
                 return BadRequest();
             var isHot = type.Equals("hot");
 
@@ -22,12 +23,18 @@ namespace rAPI.Controllers
                 if (!SessionService.Instance.ContainsKey(sessionkey))
                     return Unauthorized();
 
-                var userId = SessionService.Instance[sessionkey].userid;
-                result = DatabaseService.Instance.GetPostAndVote(isHot, userId);
+                var requestUserId = SessionService.Instance[sessionkey].userid;
+                if (type.Equals("user"))
+                    result = DatabaseService.Instance.GetPostAndVoteOfUser(Convert.ToInt32(userId), requestUserId);
+                else
+                    result = DatabaseService.Instance.GetPostAndVote(isHot, requestUserId);
             }
             else
             {
-                result = DatabaseService.Instance.GetPost(isHot);
+                if (type.Equals("user"))
+                    result = DatabaseService.Instance.GetPostOfUser(Convert.ToInt32(userId));
+                else
+                    result = DatabaseService.Instance.GetPost(isHot);
             }
 
             if (result.success)
