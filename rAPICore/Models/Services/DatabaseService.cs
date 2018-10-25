@@ -81,17 +81,18 @@ namespace rAPI.Services
             string title = reader[1].ToString();
             string desc = reader[2].ToString();
             string path = reader[3].ToString();
-            string username = reader[4].ToString();
-            int upvotes = Convert.ToInt32(reader[5].ToString());
-            int downvotes = Convert.ToInt32(reader[6].ToString());
-            return new Post(postId, title, desc, path, username, upvotes, downvotes);
+            int userId = Convert.ToInt32(reader[4].ToString());
+            string username = reader[5].ToString();
+            int upvotes = Convert.ToInt32(reader[6].ToString());
+            int downvotes = Convert.ToInt32(reader[7].ToString());
+            return new Post(postId, title, desc, path, userId, username, upvotes, downvotes);
         }
         public NormalAnswer GetPost(bool hot)
         {
             var command = new SQLiteCommand(this.connection);
             if (!hot)
             {
-                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, u.username, " +
+                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, u.username, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = 1) as upvotes, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes " +
                                     "FROM post p, user u " +
@@ -100,7 +101,7 @@ namespace rAPI.Services
             }
             else
             {
-                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, u.username, " +
+                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, u.username, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = 1) as upvotes, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes, " +
                                     "IFNULL((SELECT sum(v.value) FROM vote_post v WHERE v.postId = p.postId), 0) as votes " +
@@ -124,18 +125,19 @@ namespace rAPI.Services
             string title = reader[1].ToString();
             string desc = reader[2].ToString();
             string path = reader[3].ToString();
-            string username = reader[4].ToString();
-            int upvotes = Convert.ToInt32(reader[5].ToString());
-            int downvotes = Convert.ToInt32(reader[6].ToString());
-            int yourvote = Convert.ToInt32(reader[7].ToString());
-            return new Post(postId, title, desc, path, username, upvotes, downvotes, yourvote);
+            int userId = Convert.ToInt32(reader[4].ToString());
+            string username = reader[5].ToString();
+            int upvotes = Convert.ToInt32(reader[6].ToString());
+            int downvotes = Convert.ToInt32(reader[7].ToString());
+            int yourvote = Convert.ToInt32(reader[8].ToString());
+            return new Post(postId, title, desc, path, userId, username, upvotes, downvotes, yourvote);
         }
         public NormalAnswer GetPostAndVote(bool hot, int userId)
         {
             var command = new SQLiteCommand(this.connection);
             if (!hot)
             {
-                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, u.username, " +
+                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, u.username, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = 1) as upvotes, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes, " +
                                    $"IFNULL((SELECT v.value FROM vote_post v WHERE v.postId = p.postId AND v.userId = {userId}), 0) as yourvote " +
@@ -145,7 +147,7 @@ namespace rAPI.Services
             }
             else
             {
-                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, u.username, " +
+                command.CommandText = "SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, u.username, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = 1) as upvotes, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND v.value = -1) as downvotes, " +
                                    $"IFNULL((SELECT v.value FROM vote_post v WHERE v.postId = p.postId AND v.userId = {userId}), 0) as yourvote, " +
@@ -167,7 +169,7 @@ namespace rAPI.Services
         public NormalAnswer GetSinglePost(int postId)
         {
             var command = new SQLiteCommand(this.connection);
-            command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, " +
+            command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, " +
                                     "(SELECT u.username FROM user u WHERE u.userId = p.userId) as username, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = 1) as upvotes, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = -1) as downvotes " +
@@ -189,7 +191,7 @@ namespace rAPI.Services
         public NormalAnswer GetSinglePost(int postId, int userId)
         {
             var command = new SQLiteCommand(this.connection);
-            command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, " +
+            command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, " +
                                     "(SELECT u.username FROM user u WHERE u.userId = p.userId) as username, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = 1) as upvotes, " +
                                     "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = -1) as downvotes " +

@@ -49,6 +49,8 @@ namespace rAPICoreTest
             Assert.Equal(Mocks.createPosts[0].title, actual.title);
             Assert.Equal(Mocks.createPosts[0].description, actual.description);
             Assert.Equal(Mocks.createPosts[0].path, actual.path);
+            Assert.Equal(1, actual.userId);
+            Assert.Equal("testusername", actual.user);
         }
 
         [Fact]
