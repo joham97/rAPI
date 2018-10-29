@@ -283,7 +283,7 @@ namespace rAPI.Services
             }
             if (command.ExecuteNonQuery() > 0)
             {
-                return new NormalAnswer(true, "successful", 200);
+                return GetSinglePost(votePost.postId, votePost.userId);
             }
             return new NormalAnswer(false, "internal server error [sql]", 500);
         }

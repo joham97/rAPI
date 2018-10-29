@@ -266,10 +266,9 @@ namespace rAPICoreTest
             VoteController voteController = new VoteController();
 
             // Act
-            voteController.Post(loginData.sessionkey, Mocks.upvote);
+            var actionResult = voteController.Post(loginData.sessionkey, Mocks.upvote).Result;
 
             // Assert
-            var actionResult = postController.Get(loginData.sessionkey, 1).Result;
             var actual = ((actionResult as OkObjectResult).Value as ComplexAnswer).data as Post;
 
             Assert.Equal(Mocks.createPosts[0].title, actual.title);
@@ -315,12 +314,11 @@ namespace rAPICoreTest
             var createdPost = ((getPostResult as OkObjectResult).Value as ComplexAnswer).data as Post;
 
             VoteController voteController = new VoteController();
-
+            
             // Act
-            voteController.Post(loginData.sessionkey, Mocks.downvote);
+            var actionResult = voteController.Post(loginData.sessionkey, Mocks.downvote).Result;
 
             // Assert
-            var actionResult = postController.Get(loginData.sessionkey, 1).Result;
             var actual = ((actionResult as OkObjectResult).Value as ComplexAnswer).data as Post;
 
             Assert.Equal(Mocks.createPosts[0].title, actual.title);
