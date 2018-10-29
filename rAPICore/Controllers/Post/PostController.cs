@@ -20,11 +20,11 @@ namespace rAPI.Controllers
                     return Unauthorized();
 
                 var userId = SessionService.Instance[sessionkey].userid;
-                result = DatabaseService.Instance.GetSinglePost(postId, userId);
+                result = DatabaseService.Instance.GetWholePost(postId, userId);
             }
             else
             {
-                result = DatabaseService.Instance.GetSinglePost(postId);
+                result = DatabaseService.Instance.GetWholePost(postId);
             }
 
 

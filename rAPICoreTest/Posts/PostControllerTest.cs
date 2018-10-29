@@ -275,6 +275,8 @@ namespace rAPICoreTest
             Assert.Equal(Mocks.createPosts[0].description, actual.description);
             Assert.Equal(Mocks.createPosts[0].path, actual.path);
             Assert.Equal(1, actual.upvotes);
+            Assert.Equal(0, actual.downvotes);
+            Assert.Equal(1, actual.yourvote);
         }
 
         [Fact]
@@ -324,7 +326,9 @@ namespace rAPICoreTest
             Assert.Equal(Mocks.createPosts[0].title, actual.title);
             Assert.Equal(Mocks.createPosts[0].description, actual.description);
             Assert.Equal(Mocks.createPosts[0].path, actual.path);
+            Assert.Equal(0, actual.upvotes);
             Assert.Equal(1, actual.downvotes);
+            Assert.Equal(-1, actual.yourvote);
         }
 
 

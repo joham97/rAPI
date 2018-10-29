@@ -203,7 +203,7 @@ namespace rAPI.Services
             return new ComplexListAnswer(true, "successful", 200, output);
         }
 
-        public NormalAnswer GetSinglePost(int postId)
+        public Post GetSinglePost(int postId)
         {
             var command = new SQLiteCommand(this.connection);
             command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, " +
@@ -213,11 +213,39 @@ namespace rAPI.Services
                                     "FROM post p " +
                                     $"WHERE p.postId = {postId};";
             Post output = null;
-            SQLiteDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            using (SQLiteDataReader reader = command.ExecuteReader())
             {
-                output = ParsePost(reader);
+                while (reader.Read())
+                {
+                    output = ParsePost(reader);
+                }
             }
+            return output;
+        }
+        public Post GetSinglePost(int postId, int userId)
+        {
+            var command = new SQLiteCommand(this.connection);
+            command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, " +
+                                    "(SELECT u.username FROM user u WHERE u.userId = p.userId) as username, " +
+                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = 1) as upvotes, " +
+                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = -1) as downvotes, " +
+                                   $"IFNULL((SELECT v.value FROM vote_post v WHERE v.postId = p.postId AND v.userId = {userId}), 0) as yourvote " +
+                                    "FROM post p " +
+                                    $"WHERE p.postId = {postId};";
+            Post output = null;
+            using (SQLiteDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    output = ParsePostWithVote(reader);
+                }
+            }
+            return output;
+        }
+
+        public NormalAnswer GetWholePost(int postId)
+        {
+            Post output = GetSinglePost(postId);
             if (output != null)
             {
                 output.comment.AddRange(GetComments(output.postId, true));
@@ -225,21 +253,9 @@ namespace rAPI.Services
             }
             return new NormalAnswer(false, "not found", 404);
         }
-        public NormalAnswer GetSinglePost(int postId, int userId)
+        public NormalAnswer GetWholePost(int postId, int userId)
         {
-            var command = new SQLiteCommand(this.connection);
-            command.CommandText = $"SELECT p.postId, p.title, p.beschreibung, p.pfad, p.userId, " +
-                                    "(SELECT u.username FROM user u WHERE u.userId = p.userId) as username, " +
-                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = 1) as upvotes, " +
-                                    "(SELECT count(*) FROM vote_post v WHERE v.postId = p.postId AND value = -1) as downvotes " +
-                                    "FROM post p " +
-                                    $"WHERE p.postId = {postId};";
-            Post output = null;
-            SQLiteDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                output = ParsePost(reader);
-            }
+            Post output = GetSinglePost(postId, userId);
             if (output != null)
             {
                 output.comment.AddRange(GetComments(output.postId, true, userId));
@@ -283,7 +299,7 @@ namespace rAPI.Services
             }
             if (command.ExecuteNonQuery() > 0)
             {
-                return GetSinglePost(votePost.postId, votePost.userId);
+                return new ComplexAnswer(true, "successful", 200, GetSinglePost(votePost.postId, votePost.userId));
             }
             return new NormalAnswer(false, "internal server error [sql]", 500);
         }
@@ -352,7 +368,7 @@ namespace rAPI.Services
         #region Comment
         public NormalAnswer CreateComment(CreateComment input, int userId)
         {
-            if (input.postId >= 0 && !GetSinglePost(input.postId).success)
+            if (input.postId >= 0 && !GetWholePost(input.postId).success)
                 return new NormalAnswer(false, "Post not found", 404);
 
             var command = new SQLiteCommand(this.connection);
